@@ -25,11 +25,10 @@
 
     <main>
 
+        <!-- LOGIN -->
         <section id="loginTela" class="card">
 
-            <div class="bandeira">
-                ★
-            </div>
+            <div class="bandeira">★</div>
 
             <h1>BRASIL DAS DIFERENÇAS</h1>
 
@@ -65,11 +64,49 @@
         </section>
 
 
+        <!-- CRIAR SENHA APÓS CONVITE -->
+        <section id="senhaTela" class="card escondido">
+
+            <div class="bandeira">★</div>
+
+            <h1>CRIE SUA SENHA</h1>
+
+            <p class="subtitulo">
+                CRIE UMA SENHA PARA ACESSAR O PORTAL
+            </p>
+
+            <div class="pixel-box">
+
+                <input
+                    id="novaSenha"
+                    type="password"
+                    placeholder="NOVA SENHA"
+                >
+
+                <input
+                    id="confirmarSenha"
+                    type="password"
+                    placeholder="CONFIRME A SENHA"
+                >
+
+            </div>
+
+            <button
+                class="pixel-btn"
+                onclick="definirSenha()"
+            >
+                ✓ CRIAR SENHA
+            </button>
+
+            <p id="erroSenha" class="subtitulo"></p>
+
+        </section>
+
+
+        <!-- PORTAL -->
         <section id="portalTela" class="card escondido">
 
-            <div class="bandeira">
-                ★
-            </div>
+            <div class="bandeira">★</div>
 
             <h1>BRASIL DAS DIFERENÇAS</h1>
 
@@ -79,17 +116,11 @@
 
             <div class="pixel-box">
 
-                <p>
-                    👤 ACESSO LIBERADO
-                </p>
+                <p>👤 ACESSO LIBERADO</p>
 
-                <p>
-                    🎮 VERSÃO: 1.0
-                </p>
+                <p>🎮 VERSÃO: 1.0</p>
 
-                <p>
-                    ✅ STATUS: ATIVO
-                </p>
+                <p>✅ STATUS: ATIVO</p>
 
             </div>
 

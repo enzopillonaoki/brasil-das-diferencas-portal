@@ -9,6 +9,28 @@ let supabaseClient = null;
 
 
 /* =========================================
+   VERIFICAR SE VEIO DE UM CONVITE
+   ========================================= */
+
+const parametrosHash =
+    new URLSearchParams(
+        window.location.hash.substring(1)
+    );
+
+const parametrosURL =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const tipoLink =
+    parametrosHash.get("type") ||
+    parametrosURL.get("type");
+
+let modoCriarSenha =
+    tipoLink === "invite";
+
+
+/* =========================================
    CONECTAR AO SUPABASE
    ========================================= */
 
@@ -26,30 +48,57 @@ const supabasePronto = import(
 
 
 /* =========================================
-   MOSTRAR TELA CORRETA
+   ESCONDER TODAS AS TELAS
    ========================================= */
 
-function atualizarTela(usuarioLogado) {
+function esconderTelas() {
 
-    const loginTela =
-        document.getElementById("loginTela");
+    document
+        .getElementById("loginTela")
+        .classList.add("escondido");
 
-    const portalTela =
-        document.getElementById("portalTela");
+    document
+        .getElementById("senhaTela")
+        .classList.add("escondido");
+
+    document
+        .getElementById("portalTela")
+        .classList.add("escondido");
+}
 
 
-    if (usuarioLogado) {
+/* =========================================
+   ATUALIZAR TELA
+   ========================================= */
 
-        loginTela.classList.add("escondido");
+function atualizarTela(sessao) {
 
-        portalTela.classList.remove("escondido");
+    esconderTelas();
 
-    } else {
 
-        portalTela.classList.add("escondido");
+    if (sessao && modoCriarSenha) {
 
-        loginTela.classList.remove("escondido");
+        document
+            .getElementById("senhaTela")
+            .classList.remove("escondido");
+
+        return;
     }
+
+
+    if (sessao) {
+
+        document
+            .getElementById("portalTela")
+            .classList.remove("escondido");
+
+        return;
+    }
+
+
+    document
+        .getElementById("loginTela")
+        .classList.remove("escondido");
 }
 
 
@@ -60,10 +109,15 @@ function atualizarTela(usuarioLogado) {
 async function entrar() {
 
     const email =
-        document.getElementById("email").value.trim();
+        document
+            .getElementById("email")
+            .value
+            .trim();
 
     const senha =
-        document.getElementById("senha").value;
+        document
+            .getElementById("senha")
+            .value;
 
     const erro =
         document.getElementById("erro");
@@ -114,6 +168,8 @@ async function entrar() {
 
         erro.textContent = "";
 
+        modoCriarSenha = false;
+
         atualizarTela(data.session);
 
 
@@ -123,6 +179,117 @@ async function entrar() {
 
         erro.textContent =
             "ERRO AO CONECTAR. TENTE NOVAMENTE.";
+    }
+}
+
+
+/* =========================================
+   DEFINIR SENHA DO CONVITE
+   ========================================= */
+
+async function definirSenha() {
+
+    const novaSenha =
+        document
+            .getElementById("novaSenha")
+            .value;
+
+    const confirmarSenha =
+        document
+            .getElementById("confirmarSenha")
+            .value;
+
+    const erroSenha =
+        document.getElementById("erroSenha");
+
+
+    erroSenha.textContent = "";
+
+
+    if (
+        novaSenha === "" ||
+        confirmarSenha === ""
+    ) {
+
+        erroSenha.textContent =
+            "PREENCHA OS DOIS CAMPOS.";
+
+        return;
+    }
+
+
+    if (novaSenha.length < 8) {
+
+        erroSenha.textContent =
+            "A SENHA PRECISA TER PELO MENOS 8 CARACTERES.";
+
+        return;
+    }
+
+
+    if (novaSenha !== confirmarSenha) {
+
+        erroSenha.textContent =
+            "AS SENHAS NÃO SÃO IGUAIS.";
+
+        return;
+    }
+
+
+    erroSenha.textContent =
+        "CRIANDO SENHA...";
+
+
+    try {
+
+        const supabase =
+            await supabasePronto;
+
+
+        const { error } =
+            await supabase.auth.updateUser({
+
+                password: novaSenha
+
+            });
+
+
+        if (error) {
+
+            console.error(error);
+
+            erroSenha.textContent =
+                "NÃO FOI POSSÍVEL CRIAR A SENHA.";
+
+            return;
+        }
+
+
+        modoCriarSenha = false;
+
+
+        history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
+
+
+        const {
+            data: { session }
+        } =
+            await supabase.auth.getSession();
+
+
+        atualizarTela(session);
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        erroSenha.textContent =
+            "ERRO AO CRIAR A SENHA.";
     }
 }
 
@@ -146,6 +313,8 @@ async function sair() {
 
         document.getElementById("senha").value = "";
 
+        modoCriarSenha = false;
+
         atualizarTela(null);
 
 
@@ -157,7 +326,7 @@ async function sair() {
 
 
 /* =========================================
-   VERIFICAR LOGIN AO ABRIR O SITE
+   VERIFICAR LOGIN AO ABRIR
    ========================================= */
 
 async function verificarLogin() {
@@ -168,6 +337,25 @@ async function verificarLogin() {
             await supabasePronto;
 
 
+        supabase.auth.onAuthStateChange(
+            (evento, novaSessao) => {
+
+                if (
+                    evento === "SIGNED_IN" &&
+                    tipoLink === "invite"
+                ) {
+
+                    modoCriarSenha = true;
+                }
+
+
+                atualizarTela(
+                    novaSessao
+                );
+            }
+        );
+
+
         const {
             data: { session }
         } =
@@ -175,15 +363,6 @@ async function verificarLogin() {
 
 
         atualizarTela(session);
-
-
-        supabase.auth.onAuthStateChange(
-            (_evento, novaSessao) => {
-
-                atualizarTela(novaSessao);
-
-            }
-        );
 
 
     } catch (erro) {
