@@ -55,6 +55,14 @@ function atualizarTela(sessao) {
             .getElementById("senhaTela")
             .classList.remove("escondido");
 
+        setTimeout(() => {
+
+            document
+                .getElementById("novaSenha")
+                .focus();
+
+        }, 100);
+
         return;
     }
 
@@ -70,6 +78,14 @@ function atualizarTela(sessao) {
     document
         .getElementById("loginTela")
         .classList.remove("escondido");
+
+    setTimeout(() => {
+
+        document
+            .getElementById("email")
+            .focus();
+
+    }, 100);
 }
 
 
@@ -142,6 +158,10 @@ async function enviarLinkSenha() {
 
         erro.textContent =
             "DIGITE SEU E-MAIL PRIMEIRO.";
+
+        document
+            .getElementById("email")
+            .focus();
 
         return;
     }
@@ -273,10 +293,88 @@ async function sair() {
 
 
 /* =========================================
+   TECLA ENTER
+   ========================================= */
+
+function configurarEnter() {
+
+    const email =
+        document.getElementById("email");
+
+    const senha =
+        document.getElementById("senha");
+
+    const novaSenha =
+        document.getElementById("novaSenha");
+
+    const confirmarSenha =
+        document.getElementById("confirmarSenha");
+
+
+    email.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                senha.focus();
+            }
+        }
+    );
+
+
+    senha.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                entrar();
+            }
+        }
+    );
+
+
+    novaSenha.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                confirmarSenha.focus();
+            }
+        }
+    );
+
+
+    confirmarSenha.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                definirSenha();
+            }
+        }
+    );
+}
+
+
+/* =========================================
    INICIAR
    ========================================= */
 
 async function iniciar() {
+
+    configurarEnter();
 
     const supabase =
         await supabasePronto;
